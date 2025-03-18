@@ -16,7 +16,7 @@ export function bg(c, cv) {
     getContext(cv).save();
     getContext(cv).strokeStyle = 'transparent';
     getContext(cv).fillStyle = c;
-    getContext(cv).fillRect(0, 0, cv.width, cv.height);
+    getContext(cv).fillRect(0, 0, cv.width / cv.resolution, cv.height / cv.resolution);
     getContext(cv).restore();
 }
 
@@ -396,7 +396,7 @@ export function radialGradient(
  * @param {number} [a=1.0] - Canal alfa (0-1)
  * @returns {string} Color en formato rgba()
  */
-function colorRGB(r = 255, g = 255, b = 255, a = 1.0) {
+export function colorRGB(r = 255, g = 255, b = 255, a = 1.0) {
     return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
 }
 
@@ -406,7 +406,7 @@ function colorRGB(r = 255, g = 255, b = 255, a = 1.0) {
  * @param {number} [a=1.0] - Canal alfa (0-1)
  * @returns {string} Color en formato rgba()
  */
-function colorBW(c = 255, a = 1.0) {
+export function colorBW(c = 255, a = 1.0) {
     return 'rgba(' + c + ',' + c + ',' + c + ',' + a + ')';
 }
 
@@ -418,7 +418,7 @@ function colorBW(c = 255, a = 1.0) {
  * @param {number} [a=1.0] - Canal alfa (0-1)
  * @returns {string} Color en formato hsla()
  */
-function colorHSB(h = 0, s = 100, l = 50, a = 1.0) {
+export function colorHSB(h = 0, s = 100, l = 50, a = 1.0) {
     const _s = s + '%';
     const _l = l + '%';
     return 'hsla(' + h + ',' + _s + ',' + _l + ',' + a + ')';
