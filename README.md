@@ -56,4 +56,3 @@ function draw(o) {
 // Inicializar
 ascanvas(setup, draw);
 ```
-

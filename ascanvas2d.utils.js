@@ -1,14 +1,22 @@
-// Random function w/ seed
-/*
-// seeding -> cyrb128 + mulberry32
-let random = _createRandom(seed?);
-
-// Uso ---------------------------
-const random = createRandom(seed?);
-random() -> 0 to < 1
-random(5,15) -> 5 to < 15
-*/
+/**
+ * Función generadora de números aleatorios con semilla
+ * Implementación basada en cyrb128 + mulberry32
+ * 
+ * Uso:
+ * const random = createRandom(seed?);
+ * random() -> 0 to < 1
+ * random(5,15) -> 5 to < 15
+ * 
+ * @private
+ * @param {string} seed - Semilla para la generación de números aleatorios
+ * @returns {Function} Función generadora de números aleatorios
+ */
 function _createRandom(seed = "") {
+	/**
+	 * Algoritmo de hash cyrb128 para generar semillas
+	 * @param {string} str - Cadena de entrada
+	 * @returns {number[]} Array de 4 números hash
+	 */
 	let cyrb128 = (str) => {
 		let h1 = 1779033703,
 			h2 = 3144134277,
@@ -32,6 +40,11 @@ function _createRandom(seed = "") {
 			(h4 ^ h1) >>> 0,
 		];
 	};
+	/**
+	 * Generador de números pseudoaleatorios mulberry32
+	 * @param {number} a - Semilla numérica
+	 * @returns {Function} Función generadora de números aleatorios
+	 */
 	let mulberry32 = (a) => {
 		return function () {
 			var t = (a += 0x6d2b79f5);
@@ -51,6 +64,17 @@ function _createRandom(seed = "") {
 	}
 	return 0;
 }
+/**
+ * Crea un generador de números aleatorios con semilla opcional
+ * @param {string} [seed=""] - Semilla para la generación determinística
+ * @returns {Function} Función que genera números aleatorios:
+ *   - Sin argumentos: retorna 0 a < 1
+ *   - Con argumentos (a, b): retorna a a < b
+ * @example
+ * const random = createRandom("miSemilla");
+ * random() // 0.123...
+ * random(5, 15) // 8.456...
+ */
 export function createRandom(seed = "") {
 	let r = _createRandom(seed);
 	return function (a, b) {
@@ -60,18 +84,32 @@ export function createRandom(seed = "") {
 		return r() * (b - a) + a;
 	};
 }
-//////////////////
-// SimplexNoise
-// simplex noise by Jonas Wagner
-// Only 3d
+/**
+ * Implementación de Simplex Noise 3D
+ * Basado en el trabajo de Jonas Wagner
+ * Solo soporta ruido 3D
+ */
 
+/** Factor de deformación para 3D */
 const F3 = 1.0 / 3.0;
+/** Factor de deformación gradiente para 3D */
 const G3 = 1.0 / 6.0;
+/** Función optimizada para calcular el piso de un número */
 const fastFloor = (x) => Math.floor(x) | 0;
+/** Tabla de gradientes para simplex noise 3D */
 const grad3 = new Float64Array([
 	1, 1, 0, -1, 1, 0, 1, -1, 0, -1, -1, 0, 1, 0, 1, -1, 0, 1, 1, 0, -1, -1, 0,
 	-1, 0, 1, 1, 0, -1, 1, 0, 1, -1, 0, -1, -1,
 ]);
+
+/**
+ * Crea un generador de ruido Simplex 3D
+ * @param {Function} [random=Math.random] - Función generadora de números aleatorios
+ * @returns {Function} Función de ruido que acepta coordenadas (x, y, z) y retorna un valor entre -1 y 1
+ * @example
+ * const noise3D = createNoise3D();
+ * const valor = noise3D(x, y, z); // -1 a 1
+ */
 export function createNoise3D(random = Math.random) {
 	const perm = buildPermutationTable(random);
 	const permGrad3x = new Float64Array(perm).map((v) => grad3[(v % 12) * 3]);
@@ -81,6 +119,13 @@ export function createNoise3D(random = Math.random) {
 	const permGrad3z = new Float64Array(perm).map(
 		(v) => grad3[(v % 12) * 3 + 2],
 	);
+	/**
+	 * Función de ruido Simplex 3D
+	 * @param {number} x - Coordenada X
+	 * @param {number} y - Coordenada Y
+	 * @param {number} z - Coordenada Z
+	 * @returns {number} Valor de ruido entre -1 y 1
+	 */
 	return function noise3D(x, y, z) {
 		let n0, n1, n2, n3;
 		const s = (x + y + z) * F3;
@@ -206,6 +251,11 @@ export function createNoise3D(random = Math.random) {
 		return 32.0 * (n0 + n1 + n2 + n3);
 	};
 }
+/**
+ * Construye la tabla de permutaciones para el algoritmo de simplex noise
+ * @param {Function} random - Función generadora de números aleatorios
+ * @returns {Uint8Array} Tabla de permutaciones de 512 elementos
+ */
 function buildPermutationTable(random) {
 	const tableSize = 512;
 	const p = new Uint8Array(tableSize);

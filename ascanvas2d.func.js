@@ -129,6 +129,13 @@ export function line(x1, y1, x2, y2, cv) {
 }
 
 /**
+ * Establece el estilo de extremo de línea a redondeado
+ * @param {HTMLCanvasElement} cv - Elemento canvas
+ */
+export function lineCapRound(cv) {
+    getContext(cv).lineCap = 'round';
+}
+/**
  * Dibuja un punto en el canvas
  * @param {number} x - Posición X
  * @param {number} y - Posición Y
