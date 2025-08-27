@@ -273,3 +273,132 @@ function buildPermutationTable(random) {
 	}
 	return p;
 }
+/**
+ * Calcula el curl de un campo vectorial de ruido F(p) = [Nx, Ny, Nz]
+ * usando diferencias centrales (finite differences).
+ *
+ * @param {[number, number, number]} p  Punto [x, y, z]
+ * @param {(p:[number,number,number]) => [number,number,number]} noiseVec3
+ *        Función que devuelve el vector de ruido en p
+ * @param {number} eps  Paso para derivadas (más chico = más caro pero más preciso)
+ * @param {number} outScale  Factor de escala del resultado
+ * @param {boolean} normalize  Si true, normaliza el vector final
+ * @returns {[number, number, number]} curl(F)(p)
+ */
+export function curlNoise3(p, noiseVec3, eps = 0.0005, outScale = 1.0, normalize = false) {
+	const [x, y, z] = p;
+
+	// Helpers para evaluar F en puntos desplazados
+	const F_yPlus = noiseVec3([x, y + eps, z]);
+	const F_yMinus = noiseVec3([x, y - eps, z]);
+	const F_zPlus = noiseVec3([x, y, z + eps]);
+	const F_zMinus = noiseVec3([x, y, z - eps]);
+	const F_xPlus = noiseVec3([x + eps, y, z]);
+	const F_xMinus = noiseVec3([x - eps, y, z]);
+
+	// Derivadas parciales (dFx/dy, dFx/dz, etc.) vía diferencias centrales
+	const inv2e = 1 / (2 * eps);
+
+	const dFz_dy = (F_yPlus[2] - F_yMinus[2]) * inv2e;
+	const dFy_dz = (F_zPlus[1] - F_zMinus[1]) * inv2e;
+
+	const dFx_dz = (F_zPlus[0] - F_zMinus[0]) * inv2e;
+	const dFz_dx = (F_xPlus[2] - F_xMinus[2]) * inv2e;
+
+	const dFy_dx = (F_xPlus[1] - F_xMinus[1]) * inv2e;
+	const dFx_dy = (F_yPlus[0] - F_yMinus[0]) * inv2e;
+
+	// curl(F) = (dFz/dy - dFy/dz,  dFx/dz - dFz/dx,  dFy/dx - dFx/dy)
+	let cx = dFz_dy - dFy_dz;
+	let cy = dFx_dz - dFz_dx;
+	let cz = dFy_dx - dFx_dy;
+
+	if (normalize) {
+		const len = Math.hypot(cx, cy, cz) || 1;
+		cx /= len; cy /= len; cz /= len;
+	}
+
+	return [cx * outScale, cy * outScale, cz * outScale];
+}
+/*
+Ejemplo de uso:
+const noise = createNoise3D();
+const curl = curlNoise3([0, 0, 0], noise);
+console.log(curl);
+  
+/////////////////////////////////////////////////////////////
+// 1) Instala una fuente de ruido (opción npm):
+// npm i simplex-noise
+import SimplexNoise from 'simplex-noise';
+
+// Tres ruidos independientes para Fx, Fy, Fz (semillas distintas)
+const nX = new SimplexNoise('seed-x');
+const nY = new SimplexNoise('seed-y');
+const nZ = new SimplexNoise('seed-z');
+
+// Campo vectorial F(p) = [Fx, Fy, Fz] a partir de ruidos escalares
+function makeNoiseVec3({
+  freq = 1.0,   // frecuencia espacial del ruido
+  amp  = 1.0,   // amplitud
+  offset = [0, 100, 200] // offsets para desacoplar componentes
+} = {}) {
+  const [ox, oy, oz] = offset;
+  return function noiseVec3(p) {
+    const x = p[0] * freq, y = p[1] * freq, z = p[2] * freq;
+    const Fx = nX.noise3D(x + ox, y, z) * amp;
+    const Fy = nY.noise3D(x, y + oy, z) * amp;
+    const Fz = nZ.noise3D(x, y, z + oz) * amp;
+    return [Fx, Fy, Fz];
+  };
+}
+
+export function curlNoise3(
+  p,
+  noiseVec3,
+  eps = 0.0005,
+  outScale = 1.0,
+  normalize = false
+) {
+  const [x, y, z] = p;
+
+  const F_yPlus  = noiseVec3([x, y + eps, z]);
+  const F_yMinus = noiseVec3([x, y - eps, z]);
+  const F_zPlus  = noiseVec3([x, y, z + eps]);
+  const F_zMinus = noiseVec3([x, y, z - eps]);
+  const F_xPlus  = noiseVec3([x + eps, y, z]);
+  const F_xMinus = noiseVec3([x - eps, y, z]);
+
+  const inv2e = 1 / (2 * eps);
+
+  const dFz_dy = (F_yPlus[2]  - F_yMinus[2])  * inv2e;
+  const dFy_dz = (F_zPlus[1]  - F_zMinus[1])  * inv2e;
+
+  const dFx_dz = (F_zPlus[0]  - F_zMinus[0])  * inv2e;
+  const dFz_dx = (F_xPlus[2]  - F_xMinus[2])  * inv2e;
+
+  const dFy_dx = (F_xPlus[1]  - F_xMinus[1])  * inv2e;
+  const dFx_dy = (F_yPlus[0]  - F_yMinus[0])  * inv2e;
+
+  let cx = dFz_dy - dFy_dz;
+  let cy = dFx_dz - dFz_dx;
+  let cz = dFy_dx - dFx_dy;
+
+  if (normalize) {
+    const len = Math.hypot(cx, cy, cz) || 1;
+    cx /= len; cy /= len; cz /= len;
+  }
+
+  return [cx * outScale, cy * outScale, cz * outScale];
+}
+
+// Ejemplo de uso:
+const F = makeNoiseVec3({ freq: 0.7, amp: 1.0 });
+const v = curlNoise3([1.2, -0.4, 0.8], F, 1e-3, 2.0,true);
+console.log(v);
+
+*/
+
+
+
+
+

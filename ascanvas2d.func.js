@@ -27,8 +27,8 @@ export function bg(c, cv) {
  * @param {HTMLCanvasElement} cv - Elemento canvas
  */
 export function size(w, h, cv) {
-    cv.width = w * cv.resolution;
-    cv.height = h * cv.resolution;
+    cv.width = w * (cv.resolution ?? 1);
+    cv.height = h * (cv.resolution ?? 1);
 }
 
 /**
