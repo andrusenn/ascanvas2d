@@ -9,6 +9,10 @@ function createCanvas() {
     document.body.appendChild(cv);
     return cv;
 }
+/**
+ * Crea un OffscreenCanvas para renderizado fuera de pantalla
+ * @returns {OffscreenCanvas} Canvas fuera de pantalla de 100x100 píxeles
+ */
 function createOffCanvas() {
     const cv = new OffscreenCanvas(100, 100);
     return cv;
@@ -16,8 +20,11 @@ function createOffCanvas() {
 
 /**
  * Inicializa un canvas 2D con funciones de setup y animación
- * @param {Function} setup Función de configuración inicial que recibe {canvas, mouse}
- * @param {Function} draw Función de animación que recibe {time, deltaRatio, canvas, mouse, frameCount}
+ * @param {Object} options - Opciones de configuración
+ * @param {Function} options.setup - Función de configuración inicial que recibe {canvas, mouse}
+ * @param {Function} options.draw - Función de animación que recibe {time, deltaRatio, canvas, mouse, frameCount, frameRate}
+ * @param {number} [options.frameRate=60] - Velocidad de fotogramas por segundo
+ * @param {boolean} [options.offScreen=false] - Si true, crea un OffscreenCanvas
  */
 export default function ascanvas2d({setup, draw, frameRate = 60, offScreen = false} = {}) {
     if(!setup || !draw) {

@@ -87,7 +87,7 @@ export function strokeWidth(sw, cv) {
  * Dibuja un círculo en el canvas
  * @param {number} x - Posición X del centro
  * @param {number} y - Posición Y del centro
- * @param {number} d - Diámetro del círculo
+ * @param {number} d - Radio del círculo
  * @param {HTMLCanvasElement} cv - Elemento canvas
  */
 export function circle(x, y, d, cv) {
@@ -323,7 +323,7 @@ export function setCanvasResolution(pixelDensity, cv) {
         const height = cv.height;
         cv.width = width * pixelDensity;
         cv.height = height * pixelDensity;
-        cv.style = `width:${width}px;height:${width}px;`;
+        cv.style = `width:${width}px;height:${height}px;`;
         cv.resolution = pixelDensity;
         getContext(cv).scale(pixelDensity, pixelDensity);
     }else{
